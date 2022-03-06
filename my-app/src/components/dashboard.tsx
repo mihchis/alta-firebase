@@ -90,7 +90,7 @@ const DashBoard = () => {
               buttonStyle="btn--warning--solid"
             >
               <i className="bx bx-log-out dashboard-logout_icon"></i>
-              <span className="dashboard-logout_content">Đằng xuất</span>
+              <span className="dashboard-logout_content">Đăng xuất</span>
             </Button>
             {/* </Link> */}
           </div>

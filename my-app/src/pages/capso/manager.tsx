@@ -45,8 +45,8 @@ const RandomManager = () => {
   //       fromDate: '14:35 - 07/11/2021',
   //       toDate: '14:35 - 12/11/2021',
   //       status: get_random(statusRan),
-  //       phone: '0948523623',
-  //       email: 'nghia.197ct33534@vanlanguni.vn',
+  //       phone: '0912345678',
+  //       email: 'tri@gmail.vn',
   //       origin: i % 2 === 0 ? 'Kiosk' : 'Hệ thống',
   //     });
   //   }

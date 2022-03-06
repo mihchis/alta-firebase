@@ -103,7 +103,7 @@ const DashboardRight = () => {
               <p>{item.active + item.noactive + (item.skip ? item.skip : 0)}</p>
               <div>
                 <img src={item.icon} alt="" />
-                <span style={{ color: item.color }}>Thiết bị</span>
+                <span style={{ color: item.color }}></span>
               </div>
             </div>
           </div>
