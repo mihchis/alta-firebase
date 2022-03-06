@@ -1,115 +1,234 @@
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useParams } from 'react-router-dom';
-import Back from '../../assets/icons/back.png';
-import Pagination from '../../components/pagination';
-import paginationSlice from '../../components/paginationSlice';
-import Table from '../../components/bang';
-import { Iservice } from '../../firebase/service';
+import Button from '../../components/button';
 import { ServiceSelector } from '../../redux/selector';
-import ControllerService from './controller';
+import SerDataService from '../../firebase/service';
+import ServiceSlice from './ServiceSlice';
 
-const TeamplateFormDetailService = () => {
+interface Iprops {
+  pathCancel: string;
+  pathSubmit: string;
+  update?: boolean;
+}
+const TeamplateFormService = (props: Iprops) => {
+  const { pathCancel, pathSubmit, update } = props;
   const { id } = useParams();
   const dispatch = useDispatch();
   const Service = useSelector(ServiceSelector);
-  let data: Iservice | undefined = Service.dataService.find(
-    (item: Iservice) => id === String(item.id)
+  let data;
+  if (update) {
+    data = Service.dataService.find((item) => id === String(item['id']));
+  }
+  const handleSubmitUpdate = () => {
+    const newObject = { ...infoService, ...checkBox };
+
+    SerDataService.updateService(infoService.id, newObject);
+    dispatch(ServiceSlice.actions.updateNewService(newObject));
+  };
+  const handleSubmitAdd = () => {
+    const newObject = { ...infoService, ...checkBox };
+
+    SerDataService.addService(infoService.id, newObject);
+    dispatch(ServiceSlice.actions.addNewService(newObject));
+  };
+  const [infoService, setInfoService] = useState(
+    data
+      ? data
+      : {
+          id: '2001',
+          nameService: 'Khám tim mạch',
+          descService: 'mô tả...',
+          fromIncrese: '0001',
+          toIncrese: '9999',
+          prefix: '0001',
+          surfix: '0001',
+          active: true,
+        }
   );
-  let Datas = [];
-  for (let i = 1; i <= 99; i++) {
-    Datas.push({
-      id: Number(id + '0000') + i,
-      status: i % 2 ? 'Đang thực hiện' : i % 3 ? 'Đã hoàn thành' : 'Vắng',
+
+  const [checkBox, stateCheckBox] = useState({
+    resetCheckbox: data ? data['resetCheckbox'] : false,
+    prefixCheckbox: data ? data['prefixCheckbox'] : false,
+    surfixCheckbox: data ? data['surfixCheckbox'] : false,
+    fromIncreseCheckbox: data ? data['fromIncreseCheckbox'] : false,
+  });
+
+  const handleChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
+    const value = evt.target.value;
+
+    if (
+      ['prefix', 'surfix', 'toIncrese', 'fromIncrese'].includes(evt.target.name)
+    ) {
+      stateCheckBox({
+        ...checkBox,
+        [evt.target.name + 'Checkbox']: value.length < 1 ? false : true,
+      });
+    }
+    setInfoService({
+      ...infoService,
+      [evt.target.name]: value,
+    });
+  };
+
+  function handleChangeCheckbox(evt: React.ChangeEvent<HTMLInputElement>) {
+    const value =
+      evt.target.type === 'checkbox' ? evt.target.checked : evt.target.value;
+    stateCheckBox({
+      ...checkBox,
+      [evt.target.name]: value,
     });
   }
-  if (Service.selectedDetail !== 'Tất cả') {
-    Datas = Datas.filter((item) => item.status === Service.selectedDetail);
-  }
-  useEffect(() => {
-    dispatch(paginationSlice.actions.reset());
-  }, [dispatch]);
   return (
-    <div className="BodyDetailService">
-      <div className="DetailService">
-        <div className="DetailService-left">
-          <div className="DetailService-left_tittle">Thông tin dịch vụ</div>
-          <div className="DetailService-left_row">
-            <div className="grid-col-3">
-              <span className="DetailService-label">Mã dịch vụ:</span>
-              <span className="DetailService-content">
-                {data && data['id']}
-              </span>
-              <span className="DetailService-label">Tên dịch vụ:</span>
-              <span className="DetailService-content">
-                {data && data['nameService']}
-              </span>
-              <span className="DetailService-label">Mô tả:</span>
-              <span className="DetailService-content">
-                {data && data['descService']}
-              </span>
+    <>
+      <div className="AddService">
+        <div className="AddService-title">Thông tin dịch vụ</div>
+        <div className="grid-col-2 AddService-gap">
+          <div className="AddService-inputItem">
+            <div>
+              Mã dịch vụ: <span>*</span>
             </div>
-            <div className="DetailService-left_tittle">Quy tắc cấp số</div>
-            <div className="grid-col-3 padding">
-              <span className="DetailService-label">Tăng tự động:</span>
-              <span className="DetailService-content">
-                <span className="DetailService-number">
-                  {data && data['fromIncrese']}
-                </span>
-                đến
-                <span className="DetailService-number">
-                  {data && data['toIncrese']}
-                </span>
-              </span>
-
-              <span className="DetailService-label">Prefix:</span>
-              <span className="DetailService-content">
-                <span className="DetailService-number">
-                  {data && data['prefix']}
-                </span>
-              </span>
-            </div>
-            <div className="DetailService-label margin">Reset mỗi ngày</div>
-            <div className="DetailService-content margin">Ví dụ: 201-2001</div>
-          </div>
-        </div>
-        <div className="DetailService-right">
-          <div className="DetailService-control">
-            <ControllerService detail />
-          </div>
-          <div className="DetailService-table">
-            <Table
-              datas={Datas}
-              tittleHeaders={[
-                { display: 'Số thứ tự', keycolum: 'id' },
-                { display: 'Trạng thái', keycolum: 'status' },
-              ]}
-              // keyDatas={["id", "status"]}
+            <input
+              type="text"
+              value={infoService['id']}
+              name="id"
+              onChange={handleChange}
+              disabled={update ? true : false}
             />
           </div>
-          <Pagination totalDatas={Datas.length} />
+          <div className="AddService-inputItem AddService-inputDesc">
+            <div>Mô tả: </div>
+            <input
+              type="text"
+              value={infoService['descService']}
+              name="descService"
+              onChange={handleChange}
+            />
+          </div>
+          <div className="AddService-inputItem">
+            <div>
+              Tên dịch vụ: <span>*</span>
+            </div>
+            <input
+              type="text"
+              value={infoService['nameService']}
+              name="nameService"
+              onChange={handleChange}
+            />
+          </div>
+        </div>
+        <div className="AddService-title">Quy tắc cấp số</div>
+        <div className="AddService-checkboxItem grid-col-7">
+          <div className="AddService-checkboxItem-left">
+            <input
+              type="checkbox"
+              className="AddService-checkbox"
+              name="fromIncreseCheckbox"
+              checked={checkBox.fromIncreseCheckbox}
+              onChange={handleChangeCheckbox}
+            />
+            <label htmlFor="AddService-checkbox-autoIncrease">
+              Tăng tự động từ:
+            </label>
+          </div>
+
+          <div className="AddService-checkboxItem-right">
+            <input
+              type="text"
+              value={infoService['fromIncrese']}
+              className="AddService-inputNumber"
+              name="fromIncrese"
+              onChange={handleChange}
+            />
+            đến
+            <input
+              type="text"
+              value={infoService['toIncrese']}
+              className="AddService-inputNumber"
+              name="toIncrese"
+              onChange={handleChange}
+            />
+          </div>
+          <div className="AddService-checkboxItem-left">
+            <input
+              type="checkbox"
+              className="AddService-checkbox"
+              name="prefixCheckbox"
+              checked={checkBox.prefixCheckbox}
+              onChange={handleChangeCheckbox}
+            />
+            <label htmlFor="AddService-checkbox-prefix">Prefix:</label>
+          </div>
+          <div className="AddService-checkboxItem-right">
+            <input
+              type="text"
+              value={infoService['prefix']}
+              className="AddService-inputNumber"
+              name="prefix"
+              onChange={handleChange}
+            />
+          </div>
+          <div className="AddService-checkboxItem-left">
+            <input
+              type="checkbox"
+              className="AddService-checkbox"
+              name="surfixCheckbox"
+              checked={checkBox.surfixCheckbox}
+              onChange={handleChangeCheckbox}
+            />
+
+            <label htmlFor="AddService-checkbox-surfix">Surfix:</label>
+          </div>
+          <div className="AddService-checkboxItem-right">
+            <input
+              type="text"
+              value={infoService['surfix']}
+              className="AddService-inputNumber"
+              name="surfix"
+              onChange={handleChange}
+            />
+          </div>
+          <div className="AddService-checkboxItem-left">
+            <input
+              type="checkbox"
+              className="AddService-checkbox"
+              name="resetCheckbox"
+              checked={checkBox.resetCheckbox}
+              onChange={handleChangeCheckbox}
+            />
+            <label htmlFor="AddService-checkbox-reset">Reset mỗi ngày:</label>
+          </div>
+        </div>
+        <div className="formAddDevice-note">
+          <span>*</span>
+          Là trường thông tin bắt buộc
         </div>
       </div>
-      <div className="DetailService-Link">
-        <Link to={`/service/update/${id}`}>
-          <div className="deviceManager-add">
-            <div className="deviceManager-add_icon">
-              <i className="bx bxs-pencil"></i>
-            </div>
-            Cập nhật danh sách
-          </div>
+      <div className="controll-btn">
+        <Link to={pathCancel}>
+          <Button
+            type="button"
+            buttonStyle="btn--warning--outline"
+            buttonSize="btn--large"
+          >
+            Hủy bỏ
+          </Button>
         </Link>
-        <Link to="/service">
-          <div className="deviceManager-add">
-            <div className="deviceManager-add_icon">
-              <img src={Back} alt="" />
-            </div>
-            Quay lại
-          </div>
+        <Link
+          to={pathSubmit}
+          onClick={update ? handleSubmitUpdate : handleSubmitAdd}
+        >
+          <Button
+            type="button"
+            buttonStyle="btn--primary--solid"
+            buttonSize="btn--large"
+          >
+            {update ? 'Cập nhật' : 'Thêm dịch vụ'}
+          </Button>
         </Link>
       </div>
-    </div>
+    </>
   );
 };
 
-export default TeamplateFormDetailService;
+export default TeamplateFormService;
