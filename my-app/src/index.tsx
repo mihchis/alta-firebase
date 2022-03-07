@@ -6,8 +6,8 @@ import store from './redux/store';
 import { Provider } from 'react-redux';
 import * as serviceWorker from './serviceWorker';
 
-import './assets/boxicons-2.1.1/css/boxicons.min.css';
 import './scss/index.scss';
+import 'boxicons/css/boxicons.min.css';
 
 ReactDOM.render(
   <React.StrictMode>
